@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  questions        Question[]
+  practiceSessions PracticeSession[]
+  collections      Collection[]
+}
+
+// ============================================
+// Question Entity
+// ============================================
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum Category {
+  TECHNICAL
+  BEHAVIORAL
+  SYSTEM_DESIGN
+  CODING
+}
+
+model Question {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String     @db.ObjectId
+  companyId   String?    @db.ObjectId
+  title       String
+  description String
+  difficulty  Difficulty
+  category    Category
+  tags        String[]
+  companyName String?
+  isPublic    Boolean    @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company         Company?          @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  practiceSessions PracticeSession[]
+  
+  @@index([userId])
+  @@index([difficulty])
+  @@index([category])
+  @@index([companyId])
+  @@index([tags])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+model PracticeSession {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  questionId String   @db.ObjectId
+  answer     String
+  duration   Int
+  rating     Int?
+  aiFeedback Json?
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([questionId])
+  @@index([userId, completedAt])
+  @@index([createdAt])
+}
+
+model Collection {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  name        String
+  description String?
+  questionIds String[]  @db.ObjectId
+  color       String?
+  isPublic    Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+model Company {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String   @unique
+  logo     String?
+  industry String?
+  website  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  questions Question[]
+}
