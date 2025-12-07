@@ -116,27 +116,13 @@ export const addQuestionToCollectionSchema = z.object({
   questionId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid question ID"),
 });
 
-export type CreateCollectionInput = z.infer<typeof createCollectionSchema>;
-export type UpdateCollectionInput = z.infer<typeof updateCollectionSchema>;
-
-export const signUpSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters").max(100),
-  name: z.string().min(2, "Name must be at least 2 characters").max(100).optional(),
-});
-
-export const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+export type AddQuestionToCollectionInput = z.infer<typeof addQuestionToCollectionSchema>;
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100).optional(),
   image: z.string().url("Invalid image URL").optional(),
 });
 
-export type SignUpInput = z.infer<typeof signUpSchema>;
-export type SignInInput = z.infer<typeof signInSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
 export const createCompanySchema = z.object({
