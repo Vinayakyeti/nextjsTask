@@ -1,5 +1,3 @@
-import { AIFeedback } from '@/types';
-
 export interface AIFeedback {
   summary: string;
   strengths: string[];

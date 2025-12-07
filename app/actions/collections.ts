@@ -12,17 +12,25 @@ export async function createCollection(formData: FormData) {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const data = {
-      name: formData.get('name') as string,
-      description: (formData.get('description') as string) || undefined,
-      color: (formData.get('color') as string) || undefined,
-    };
+    const name = (formData.get('name') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim() || undefined;
+    const color = (formData.get('color') as string)?.trim() || undefined;
 
-    const validated = createCollectionSchema.parse(data);
+    if (!name) {
+      return { success: false, error: 'Name is required' };
+    }
+
+    const validated = createCollectionSchema.parse({
+      name,
+      description,
+      color,
+    });
 
     const collection = await prisma.collection.create({
       data: {
-        ...validated,
+        name: validated.name as string,
+        description: validated.description ?? null,
+        color: validated.color,
         userId: session.user.id,
         questionIds: [],
       },

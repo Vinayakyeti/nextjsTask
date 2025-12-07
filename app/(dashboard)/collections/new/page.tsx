@@ -10,7 +10,8 @@ type Question = {
   title: string;
   difficulty: string;
   category: string;
-  companyName?: string;
+  tags: string[];
+  companyName: string | null;
 };
 
 export default function NewCollectionPage() {

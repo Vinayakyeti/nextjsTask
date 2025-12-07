@@ -23,7 +23,7 @@ export async function createPracticeSession(data: {
       data: {
         userId: session.user.id,
         questionId: validated.questionId,
-        answer: validated.answer,
+        answer: validated.answer as string,
         duration: validated.duration,
         rating: validated.rating,
       },

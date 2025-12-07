@@ -10,14 +10,14 @@ type Question = {
   title: string;
   difficulty: string;
   category: string;
-  tags?: string[];
-  companyName?: string;
+  tags: string[];
+  companyName: string | null;
 };
 
 type Collection = {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   questions: Question[];
   createdAt: Date;
 };

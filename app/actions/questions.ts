@@ -17,20 +17,32 @@ export async function createQuestion(formData: FormData) {
       return { success: false, error: 'Unauthorized', code: 'AUTH_ERROR' };
     }
 
+    const title = (formData.get('title') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim();
+    const difficulty = formData.get('difficulty') as Difficulty;
+    const category = formData.get('category') as Category;
+    const tags = (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [];
+    const companyName = (formData.get('companyName') as string)?.trim() || undefined;
+
     const data = {
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      difficulty: formData.get('difficulty') as Difficulty,
-      category: formData.get('category') as Category,
-      tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
-      companyName: (formData.get('companyName') as string) || undefined,
+      title: title || '',
+      description: description || '',
+      difficulty,
+      category,
+      tags,
+      companyName,
     };
 
     const validated = createQuestionSchema.parse(data);
 
     const question = await prisma.question.create({
       data: {
-        ...validated,
+        title: validated.title as string,
+        description: validated.description as string,
+        difficulty: validated.difficulty,
+        category: validated.category,
+        tags: (validated.tags as (string | undefined)[]).filter((t): t is string => !!t),
+        companyName: validated.companyName ?? null,
         userId: session.user.id,
       },
     });
@@ -40,9 +52,9 @@ export async function createQuestion(formData: FormData) {
     
     return { success: true, questionId: question.id };
   } catch (error) {
-    if (error instanceof ZodError && error.errors) {
+    if (error instanceof ZodError) {
       const details: Record<string, string[]> = {};
-      error.errors.forEach(err => {
+      error.issues.forEach(err => {
         const path = err.path.join('.');
         if (!details[path]) details[path] = [];
         details[path].push(err.message);
@@ -84,20 +96,34 @@ export async function updateQuestion(questionId: string, formData: FormData) {
       throw new ForbiddenError('You cannot modify this question');
     }
 
+    const title = (formData.get('title') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim();
+    const difficulty = formData.get('difficulty') as Difficulty | undefined;
+    const category = formData.get('category') as Category | undefined;
+    const tags = (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean);
+    const companyName = (formData.get('companyName') as string)?.trim();
+
     const data = {
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      difficulty: formData.get('difficulty') as Difficulty,
-      category: formData.get('category') as Category,
-      tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
-      companyName: (formData.get('companyName') as string) || undefined,
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(difficulty && { difficulty }),
+      ...(category && { category }),
+      ...(tags && { tags }),
+      ...(companyName !== undefined && { companyName: companyName || null }),
     };
 
     const validated = updateQuestionSchema.parse(data);
 
     const updated = await prisma.question.update({
       where: { id: questionId },
-      data: validated,
+      data: {
+        ...(validated.title && { title: validated.title }),
+        ...(validated.description && { description: validated.description }),
+        ...(validated.difficulty && { difficulty: validated.difficulty }),
+        ...(validated.category && { category: validated.category }),
+        ...(validated.tags && { tags: (validated.tags as (string | undefined)[]).filter((t): t is string => !!t) }),
+        ...(validated.companyName !== undefined && { companyName: validated.companyName ?? null }),
+      },
     });
 
     createAuditLog(session.user.id, 'UPDATE', 'Question', questionId);
@@ -106,9 +132,9 @@ export async function updateQuestion(questionId: string, formData: FormData) {
     
     return { success: true, questionId: updated.id };
   } catch (error) {
-    if (error instanceof ZodError && error.errors) {
+    if (error instanceof ZodError) {
       const details: Record<string, string[]> = {};
-      error.errors.forEach(err => {
+      error.issues.forEach(err => {
         const path = err.path.join('.');
         if (!details[path]) details[path] = [];
         details[path].push(err.message);

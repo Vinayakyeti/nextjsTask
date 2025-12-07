@@ -15,12 +15,8 @@ export const createQuestionSchema = z.object({
     .min(10, "Description must be at least 10 characters")
     .max(5000, "Description must be less than 5000 characters")
     .transform(sanitizeString),
-  difficulty: z.enum(["EASY", "MEDIUM", "HARD"], {
-    errorMap: () => ({ message: "Invalid difficulty level" }),
-  }),
-  category: z.enum(["TECHNICAL", "BEHAVIORAL", "SYSTEM_DESIGN", "CODING"], {
-    errorMap: () => ({ message: "Invalid category" }),
-  }),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).catch("EASY"),
+  category: z.enum(["TECHNICAL", "BEHAVIORAL", "SYSTEM_DESIGN", "CODING"]).catch("TECHNICAL"),
   tags: z
     .array(z.string().min(1).max(30).transform(sanitizeString))
     .max(10, "Maximum 10 tags allowed"),
