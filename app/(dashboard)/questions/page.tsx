@@ -183,9 +183,12 @@ export default function QuestionsPage() {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 text-white">
+                    <Link
+                      href={`/questions/${question.id}`}
+                      className="text-lg font-semibold mb-2 text-cyan-400 hover:text-cyan-300 transition block"
+                    >
                       {question.title}
-                    </h3>
+                    </Link>
                     <div className="flex gap-2 mb-2 flex-wrap">
                       <span
                         className={`px-2 py-1 text-xs rounded font-medium ${
