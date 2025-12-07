@@ -32,6 +32,9 @@ export default async function DashboardLayout({
                 <Link href="/collections" className="text-gray-700 hover:text-blue-600">
                   Collections
                 </Link>
+                <Link href="/ai-review" className="text-gray-700 hover:text-blue-600 font-medium">
+                  ✨ AI Review
+                </Link>
               </div>
             </div>
             <div className="flex items-center">
