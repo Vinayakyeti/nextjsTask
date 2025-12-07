@@ -36,7 +36,7 @@ export async function createQuestion(formData: FormData) {
     });
 
     createAuditLog(session.user.id, 'CREATE', 'Question', question.id);
-    revalidatePath('/dashboard/questions');
+    revalidatePath('/questions');
     
     return { success: true, questionId: question.id };
   } catch (error) {
@@ -101,8 +101,8 @@ export async function updateQuestion(questionId: string, formData: FormData) {
     });
 
     createAuditLog(session.user.id, 'UPDATE', 'Question', questionId);
-    revalidatePath('/dashboard/questions');
-    revalidatePath(`/dashboard/questions/${questionId}`);
+    revalidatePath('/questions');
+    revalidatePath(`/questions/${questionId}`);
     
     return { success: true, questionId: updated.id };
   } catch (error) {
@@ -157,7 +157,7 @@ export async function deleteQuestion(questionId: string) {
     });
 
     createAuditLog(session.user.id, 'DELETE', 'Question', questionId);
-    revalidatePath('/dashboard/questions');
+    revalidatePath('/questions');
     
     return { success: true };
   } catch (error) {
@@ -184,36 +184,32 @@ export async function getUserQuestions(page = 1, limit = 20) {
     const validated = paginationSchema.parse({ page, limit });
     const skip = (validated.page - 1) * validated.limit;
 
-    const [questions, total] = await Promise.all([
-      prisma.question.findMany({
-        where: {
-          userId: targetUserId,
-          deletedAt: null,
-        },
-        skip,
-        take: validated.limit,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          difficulty: true,
-          category: true,
-          tags: true,
-          companyName: true,
-          createdAt: true,
-        },
-      }),
-      prisma.question.count({
-        where: {
-          userId: targetUserId,
-          deletedAt: null,
-        },
-      }),
-    ]);
+    // MongoDB ObjectId vs string mismatch - query without WHERE and filter in JS
+    // This is a workaround for Prisma's MongoDB string/ObjectId handling
+    const allUserQuestions = await prisma.question.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Filter for this user and active records
+    const userQuestions = allUserQuestions.filter(q => 
+      String(q.userId) === String(targetUserId) && q.deletedAt === null
+    );
+
+    // Apply pagination
+    const paginatedQuestions = userQuestions.slice(skip, skip + validated.limit);
+    const total = userQuestions.length;
 
     return {
       success: true,
-      questions,
+      questions: paginatedQuestions.map(q => ({
+        id: q.id,
+        title: q.title,
+        difficulty: q.difficulty,
+        category: q.category,
+        tags: q.tags,
+        companyName: q.companyName,
+        createdAt: q.createdAt,
+      })),
       pagination: {
         page: validated.page,
         limit: validated.limit,

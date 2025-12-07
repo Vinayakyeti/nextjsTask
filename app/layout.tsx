@@ -13,27 +13,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased flex flex-col min-h-screen">
+      <body className="antialiased flex flex-col min-h-screen bg-black text-white">
         <main className="flex-1">{children}</main>
-        <footer className="bg-gray-900 text-white py-6 mt-auto">
+        <footer className="bg-zinc-900 text-white py-6 mt-auto border-t border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <p className="text-sm mb-2">
-              Built by <span className="font-semibold">YOUR_NAME</span>
+              Built by <span className="font-semibold">Vinayak</span>
             </p>
             <div className="flex justify-center gap-6">
               <a
-                href="YOUR_GITHUB_URL"
+                href="https://github.com/Vinayakyeti"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition"
+                className="text-zinc-400 hover:text-white transition"
               >
                 GitHub
               </a>
               <a
-                href="YOUR_LINKEDIN_URL"
+                href="https://www.linkedin.com/in/vinayak-tiwari15/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition"
+                className="text-zinc-400 hover:text-white transition"
               >
                 LinkedIn
               </a>

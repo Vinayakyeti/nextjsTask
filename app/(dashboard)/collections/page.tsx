@@ -39,27 +39,27 @@ export default function CollectionsPage() {
   };
 
   if (loading) {
-    return <div>Loading collections...</div>;
+    return <div className="text-white">Loading collections...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Question Collections</h1>
+        <h1 className="text-3xl font-bold text-white">Question Collections</h1>
         <Link
           href="/collections/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition"
         >
           New Collection
         </Link>
       </div>
 
       {collections.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-600 mb-4">No collections found</p>
+        <div className="text-center py-12 bg-zinc-900 rounded-lg border border-zinc-800">
+          <p className="text-zinc-400 mb-4">No collections found</p>
           <Link
             href="/collections/new"
-            className="text-blue-600 hover:underline"
+            className="text-cyan-400 hover:text-cyan-300 font-semibold transition"
           >
             Create your first collection
           </Link>
@@ -69,19 +69,19 @@ export default function CollectionsPage() {
           {collections.map((collection) => (
             <div
               key={collection.id}
-              className="bg-white p-6 rounded-lg shadow border"
+              className="bg-zinc-900 p-6 rounded-lg shadow border border-zinc-800"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2">
+                  <h3 className="text-xl font-semibold mb-2 text-white">
                     {collection.name}
                   </h3>
                   {collection.description && (
-                    <p className="text-gray-600 mb-3">
+                    <p className="text-zinc-400 mb-3">
                       {collection.description}
                     </p>
                   )}
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-zinc-500">
                     {collection.questionIds.length} question
                     {collection.questionIds.length !== 1 ? "s" : ""}
                   </p>
@@ -89,19 +89,19 @@ export default function CollectionsPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/collections/${collection.id}`}
-                    className="text-blue-600 hover:underline text-sm"
+                    className="text-cyan-400 hover:text-cyan-300 text-sm font-semibold transition"
                   >
                     View
                   </Link>
                   <Link
                     href={`/collections/${collection.id}/edit`}
-                    className="text-green-600 hover:underline text-sm"
+                    className="text-emerald-400 hover:text-emerald-300 text-sm font-semibold transition"
                   >
                     Edit
                   </Link>
                   <button
                     onClick={() => handleDelete(collection.id)}
-                    className="text-red-600 hover:underline text-sm"
+                    className="text-red-400 hover:text-red-300 text-sm font-semibold transition"
                   >
                     Delete
                   </button>

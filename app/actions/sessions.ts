@@ -133,7 +133,6 @@ export async function getPracticeStats() {
       },
     };
   } catch (error) {
-    console.error('Get practice stats error:', error);
     return {
       success: false,
       error: 'Failed to fetch stats',

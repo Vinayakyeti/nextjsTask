@@ -14,13 +14,8 @@ export async function generateAnswerFeedback(
   const apiKey = process.env.AI_API_KEY;
   const aiProvider = process.env.AI_PROVIDER || 'openai';
 
-  console.log(`[AI] Generating feedback - Provider: ${aiProvider}`);
-  console.log(`[AI] API Key exists: ${!!apiKey}, Key length: ${apiKey?.length || 0}`);
-
   if (!apiKey) {
-    const error = new Error('AI_API_KEY environment variable not set');
-    console.error('[AI] Error:', error.message);
-    throw error;
+    throw new Error('AI_API_KEY environment variable not set');
   }
 
   if (aiProvider === 'openai') {
@@ -30,9 +25,7 @@ export async function generateAnswerFeedback(
   } else if (aiProvider === 'groq') {
     return callGroq(question, answer, apiKey);
   } else {
-    const error = new Error(`Unsupported AI provider: ${aiProvider}`);
-    console.error('[AI] Error:', error.message);
-    throw error;
+    throw new Error(`Unsupported AI provider: ${aiProvider}`);
   }
 }
 
@@ -96,8 +89,6 @@ async function callGemini(
   userAnswer: string,
   apiKey: string
 ): Promise<AIFeedback> {
-  console.log(`[Gemini] Calling Gemini API for feedback generation`);
-
   const response = await fetch(
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
     {
@@ -135,32 +126,25 @@ Return ONLY valid JSON with:
     }
   );
 
-  console.log(`[Gemini] API response status: ${response.status}`);
-
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const errorMsg = error.error?.message || `HTTP ${response.status}`;
-    console.error(`[Gemini] API error: ${errorMsg}`);
     throw new Error(`Gemini API error: ${errorMsg}`);
   }
 
   const data = await response.json();
-  console.log(`[Gemini] Received response data successfully`);
 
   const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!content) {
-    console.error(`[Gemini] No content in response:`, data);
     throw new Error('No response content from Gemini API');
   }
 
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    console.error(`[Gemini] Could not parse JSON from response:`, content.substring(0, 500));
     throw new Error('Failed to parse JSON from Gemini response');
   }
 
-  console.log(`[Gemini] Successfully parsed feedback`);
   return JSON.parse(jsonMatch[0]) as AIFeedback;
 }
 

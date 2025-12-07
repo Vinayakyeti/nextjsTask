@@ -31,6 +31,7 @@ export default function NewQuestionPage() {
       if (result.error) {
         setError(result.error);
       } else {
+        router.refresh();
         router.push("/questions");
       }
     } catch (err) {
@@ -41,19 +42,20 @@ export default function NewQuestionPage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">Add New Question</h1>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="w-full max-w-2xl">
+        <h1 className="text-3xl font-bold mb-6 text-white">Add New Question</h1>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="bg-red-900 text-red-200 p-4 rounded-lg mb-4 text-sm border border-red-700">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            Question Title *
+        <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900 p-6 rounded-lg shadow border border-zinc-800">
+          <div>
+          <label htmlFor="title" className="block text-sm font-semibold mb-2 text-white">
+            Question Title * <span className="text-zinc-400 text-xs">(Min: 5 characters, Max: 200)</span>
           </label>
           <input
             type="text"
@@ -61,14 +63,16 @@ export default function NewQuestionPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            maxLength={200}
+            className="w-full px-4 py-2.5 bg-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-zinc-700 placeholder-zinc-500"
             placeholder="e.g., Two Sum Problem"
           />
+          <p className="text-xs text-zinc-400 mt-1">{title.length}/200 characters</p>
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            Description *
+          <label htmlFor="description" className="block text-sm font-semibold mb-2 text-white">
+            Description * <span className="text-zinc-400 text-xs">(Min: 10 characters, Max: 5000)</span>
           </label>
           <textarea
             id="description"
@@ -76,21 +80,23 @@ export default function NewQuestionPage() {
             onChange={(e) => setDescription(e.target.value)}
             required
             rows={6}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            maxLength={5000}
+            className="w-full px-4 py-2.5 bg-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-zinc-700 placeholder-zinc-500"
             placeholder="Describe the problem, constraints, and examples..."
           />
+          <p className="text-xs text-zinc-400 mt-1">{description.length}/5000 characters</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="difficulty" className="block text-sm font-medium mb-1">
+            <label htmlFor="difficulty" className="block text-sm font-semibold mb-2 text-white">
               Difficulty *
             </label>
             <select
               id="difficulty"
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as any)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-zinc-700"
             >
               <option value="EASY">Easy</option>
               <option value="MEDIUM">Medium</option>
@@ -99,14 +105,14 @@ export default function NewQuestionPage() {
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium mb-1">
+            <label htmlFor="category" className="block text-sm font-semibold mb-2 text-white">
               Category *
             </label>
             <select
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value as any)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-zinc-700"
             >
               <option value="TECHNICAL">Technical</option>
               <option value="BEHAVIORAL">Behavioral</option>
@@ -117,7 +123,7 @@ export default function NewQuestionPage() {
         </div>
 
         <div>
-          <label htmlFor="tags" className="block text-sm font-medium mb-1">
+          <label htmlFor="tags" className="block text-sm font-semibold mb-2 text-white">
             Tags
           </label>
           <input
@@ -125,10 +131,10 @@ export default function NewQuestionPage() {
             id="tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 bg-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 border border-zinc-700 placeholder-zinc-500"
             placeholder="arrays, hash-table, dynamic-programming (comma-separated)"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Separate tags with commas
           </p>
         </div>
@@ -137,19 +143,20 @@ export default function NewQuestionPage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
+            className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-zinc-700 text-white font-semibold px-6 py-2 rounded-lg transition disabled:cursor-not-allowed"
           >
             {loading ? "Creating..." : "Create Question"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300"
+            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-6 py-2 rounded-lg transition border border-zinc-700"
           >
             Cancel
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 }

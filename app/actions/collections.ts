@@ -28,7 +28,7 @@ export async function createCollection(formData: FormData) {
       },
     });
 
-    revalidatePath('/dashboard/collections');
+    revalidatePath('/collections');
     return { success: true, collectionId: collection.id };
   } catch (error) {
     return {
@@ -67,11 +67,10 @@ export async function updateCollection(collectionId: string, formData: FormData)
       data: validated,
     });
 
-    revalidatePath('/dashboard/collections');
-    revalidatePath(`/dashboard/collections/${collectionId}`);
+    revalidatePath('/collections');
+    revalidatePath(`/collections/${collectionId}`);
     return { success: true };
   } catch (error) {
-    console.error('Update collection error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update collection',
@@ -100,10 +99,11 @@ export async function deleteCollection(collectionId: string) {
       data: { deletedAt: new Date() },
     });
 
-    revalidatePath('/dashboard/collections');
+    revalidatePath('/collections');
     return { success: true };
   } catch (error) {
-    return {s: false,
+    return {
+      success: false,
       error: error instanceof Error ? error.message : 'Failed to delete collection',
     };
   }
@@ -124,26 +124,37 @@ export async function addQuestionToCollection(collectionId: string, questionId: 
       return { success: false, error: 'Collection not found or unauthorized' };
     }
 
-    // Check if question exists and user has access
+    // Check if question exists and user has access (owns the question)
     const question = await prisma.question.findUnique({
       where: { id: questionId },
     });
 
-    if (!question || question.deletedAt) {
-      return { success: false, error: 'Question not found' };
+    if (!question || question.deletedAt || question.userId !== session.user.id) {
+      return { success: false, error: 'Question not found or unauthorized' };
     }
 
-    // Add question if not already in collection
-    if (!collection.questionIds.includes(questionId)) {
+    // Check if already exists - convert to string for comparison
+    const questionIdStr = String(questionId);
+    const alreadyExists = collection.questionIds?.some(id => String(id) === questionIdStr);
+    
+    if (!alreadyExists) {
+      // For MongoDB with Prisma, we need to handle array updates carefully
+      // Ensure we're working with an array
+      const currentIds = Array.isArray(collection.questionIds) ? collection.questionIds : [];
+      
+      const updatedIds = [...currentIds, questionId];
+      
       await prisma.collection.update({
         where: { id: collectionId },
         data: {
-          questionIds: [...collection.questionIds, questionId],
+          questionIds: updatedIds,
         },
       });
+    } else {
+      return { success: false, error: 'Question already in collection' };
     }
 
-    revalidatePath(`/dashboard/collections/${collectionId}`);
+    revalidatePath(`/collections/${collectionId}`);
     return { success: true };
   } catch (error) {
     return {
@@ -175,7 +186,7 @@ export async function removeQuestionFromCollection(collectionId: string, questio
       },
     });
 
-    revalidatePath(`/dashboard/collections/${collectionId}`);
+    revalidatePath(`/collections/${collectionId}`);
     return { success: true };
   } catch (error) {
     return {
@@ -194,11 +205,8 @@ export async function getUserCollections(userId?: string) {
       return { success: false, error: 'Unauthorized' };
     }
 
-    const collections = await prisma.collection.findMany({
-      where: {
-        userId: targetUserId,
-        deletedAt: null,
-      },
+    // Fetch all collections without WHERE clause to avoid Prisma's type conversion issue
+    const allCollections = await prisma.collection.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -207,8 +215,15 @@ export async function getUserCollections(userId?: string) {
         color: true,
         questionIds: true,
         createdAt: true,
+        userId: true,
+        deletedAt: true,
       },
     });
+
+    // Filter in JavaScript to match exact userId string comparison
+    const collections = allCollections.filter(c => 
+      String(c.userId) === String(targetUserId) && c.deletedAt === null
+    );
 
     return { success: true, collections };
   } catch (error) {
@@ -235,10 +250,24 @@ export async function getCollectionById(collectionId: string) {
       return { success: false, error: 'Collection not found or unauthorized' };
     }
 
+    // If array is empty, skip the query
+    if (!collection.questionIds || collection.questionIds.length === 0) {
+      return {
+        success: true,
+        collection: {
+          ...collection,
+          questions: [],
+        },
+      };
+    }
+    
     const questions = await prisma.question.findMany({
       where: {
-        id: { in: collection.questionIds },
-        deletedAt: null,
+        id: {
+          in: collection.questionIds as string[]
+        },
+        // Don't filter by deletedAt - collection should include questions even if they're deleted
+        // This allows viewing historical collections
       },
       select: {
         id: true,
@@ -258,10 +287,9 @@ export async function getCollectionById(collectionId: string) {
       },
     };
   } catch (error) {
-    console.error('Get collection error:', error);
     return {
       success: false,
-      error: 'Failed to fetch collection',
+      error: error instanceof Error ? error.message : 'Failed to fetch collection',
     };
   }
 }

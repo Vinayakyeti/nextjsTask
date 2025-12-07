@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { signUpSchema } from '@/lib/validations';
 import bcrypt from 'bcryptjs';
-import { signIn } from '@/auth';
+import { signIn, signOut } from '@/auth';
 import { AuthError } from 'next-auth';
 
 export async function signUpAction(formData: FormData) {
@@ -91,4 +91,8 @@ export async function signInAction(formData: FormData) {
     }
     throw error;
   }
+}
+
+export async function logoutAction() {
+  await signOut({ redirectTo: "/login" });
 }

@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function AIReviewPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-12">
+    <div className="min-h-screen bg-black py-12">
       <div className="max-w-4xl mx-auto px-4">
         <AnswerReviewForm />
       </div>
