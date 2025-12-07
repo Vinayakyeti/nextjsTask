@@ -119,45 +119,45 @@ export default function QuestionsPage() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">Interview Questions</h1>
+    <div className="px-4 md:px-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">Interview Questions</h1>
         <Link
           href="/questions/new"
-          className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+          className="w-full md:w-auto bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg font-semibold transition text-center"
         >
           Add Question
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-900 text-red-200 p-4 rounded-lg mb-6 border border-red-700">
+        <div className="bg-red-900 text-red-200 p-4 rounded-lg mb-6 border border-red-700 text-sm">
           {error}
         </div>
       )}
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-6 flex-wrap overflow-x-auto pb-2">
         <button
           onClick={() => setFilter("ALL")}
-          className={`px-3 py-1 rounded transition ${filter === "ALL" ? "bg-cyan-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
+          className={`px-3 py-1 rounded transition text-sm whitespace-nowrap ${filter === "ALL" ? "bg-cyan-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
         >
           All
         </button>
         <button
           onClick={() => setFilter("EASY")}
-          className={`px-3 py-1 rounded transition ${filter === "EASY" ? "bg-emerald-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
+          className={`px-3 py-1 rounded transition text-sm whitespace-nowrap ${filter === "EASY" ? "bg-emerald-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
         >
           Easy
         </button>
         <button
           onClick={() => setFilter("MEDIUM")}
-          className={`px-3 py-1 rounded transition ${filter === "MEDIUM" ? "bg-yellow-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
+          className={`px-3 py-1 rounded transition text-sm whitespace-nowrap ${filter === "MEDIUM" ? "bg-yellow-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
         >
           Medium
         </button>
         <button
           onClick={() => setFilter("HARD")}
-          className={`px-3 py-1 rounded transition ${filter === "HARD" ? "bg-red-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
+          className={`px-3 py-1 rounded transition text-sm whitespace-nowrap ${filter === "HARD" ? "bg-red-600 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"}`}
         >
           Hard
         </button>
@@ -165,33 +165,33 @@ export default function QuestionsPage() {
 
       {filteredQuestions.length === 0 ? (
         <div className="text-center py-12 bg-zinc-900 rounded-lg border border-zinc-800">
-          <p className="text-zinc-400 mb-4">No questions found</p>
+          <p className="text-zinc-400 mb-4 text-sm md:text-base">No questions found</p>
           <Link
             href="/questions/new"
-            className="text-cyan-400 hover:text-cyan-300 font-semibold transition"
+            className="text-cyan-400 hover:text-cyan-300 font-semibold transition text-sm md:text-base"
           >
             Create your first question
           </Link>
         </div>
       ) : (
         <>
-          <div className="grid gap-4 mb-6">
+          <div className="grid gap-3 md:gap-4 mb-6">
             {filteredQuestions.map((question) => (
               <div
                 key={question.id}
-                className="bg-zinc-900 p-4 rounded-lg shadow border border-zinc-800 hover:border-zinc-700 transition"
+                className="bg-zinc-900 p-3 md:p-4 rounded-lg shadow border border-zinc-800 hover:border-zinc-700 transition"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+                  <div className="flex-1 min-w-0">
                     <Link
                       href={`/questions/${question.id}`}
-                      className="text-lg font-semibold mb-2 text-cyan-400 hover:text-cyan-300 transition block"
+                      className="text-base md:text-lg font-semibold mb-2 text-cyan-400 hover:text-cyan-300 transition block truncate"
                     >
                       {question.title}
                     </Link>
                     <div className="flex gap-2 mb-2 flex-wrap">
                       <span
-                        className={`px-2 py-1 text-xs rounded font-medium ${
+                        className={`px-2 py-1 text-xs rounded font-medium whitespace-nowrap ${
                           question.difficulty === "EASY"
                             ? "bg-emerald-900 text-emerald-300"
                             : question.difficulty === "MEDIUM"
@@ -201,13 +201,13 @@ export default function QuestionsPage() {
                       >
                         {question.difficulty}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded font-medium bg-cyan-900 text-cyan-300">
+                      <span className="px-2 py-1 text-xs rounded font-medium bg-cyan-900 text-cyan-300 whitespace-nowrap">
                         {question.category}
                       </span>
                     </div>
                     {question.tags.length > 0 && (
                       <div className="flex gap-1 flex-wrap">
-                        {question.tags.map((tag, idx) => (
+                        {question.tags.slice(0, 3).map((tag, idx) => (
                           <span
                             key={idx}
                             className="px-2 py-1 text-xs rounded bg-zinc-800 text-zinc-400"
@@ -215,17 +215,22 @@ export default function QuestionsPage() {
                             #{tag}
                           </span>
                         ))}
+                        {question.tags.length > 3 && (
+                          <span className="px-2 py-1 text-xs rounded bg-zinc-800 text-zinc-400">
+                            +{question.tags.length - 3}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2 ml-4 relative">
-                    <div className="relative">
+                  <div className="flex gap-2 md:ml-4 flex-nowrap relative w-full md:w-auto justify-end">
+                    <div className="relative w-full md:w-auto">
                       <button
                         onClick={() => setShowCollectionMenu(showCollectionMenu === question.id ? null : question.id)}
-                        className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
+                        className="text-cyan-400 hover:text-cyan-300 text-xs md:text-sm font-medium transition whitespace-nowrap px-2 py-1"
                         aria-label="Add to collection"
                       >
-                        Add to Collection
+                        Add
                       </button>
                       {showCollectionMenu === question.id && (
                         <div className="absolute right-0 mt-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-10">
@@ -255,7 +260,7 @@ export default function QuestionsPage() {
                     </div>
                     <button
                       onClick={() => handleDelete(question.id)}
-                      className="text-red-400 hover:text-red-300 text-sm font-medium transition"
+                      className="text-red-400 hover:text-red-300 text-xs md:text-sm font-medium transition whitespace-nowrap px-2 py-1"
                       aria-label="Delete question"
                     >
                       Delete
@@ -267,25 +272,25 @@ export default function QuestionsPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-800">
-            <div className="text-sm text-zinc-400">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} questions
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-8 pt-6 border-t border-zinc-800 gap-4">
+            <div className="text-xs md:text-sm text-zinc-400">
+              Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => loadQuestions(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-2 border border-zinc-700 rounded-lg text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="px-2 md:px-3 py-2 border border-zinc-700 rounded-lg text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
                 aria-label="Previous page"
               >
-                Previous
+                Prev
               </button>
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(pagination.pages, 5) }).map((_, i) => (
                   <button
                     key={i + 1}
                     onClick={() => loadQuestions(i + 1)}
-                    className={`px-3 py-2 rounded-lg transition ${
+                    className={`px-2 md:px-3 py-2 rounded-lg transition text-sm ${
                       pagination.page === i + 1
                         ? "bg-cyan-600 text-white"
                         : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
@@ -300,7 +305,7 @@ export default function QuestionsPage() {
               <button
                 onClick={() => loadQuestions(pagination.page + 1)}
                 disabled={pagination.page === pagination.pages}
-                className="px-3 py-2 border border-zinc-700 rounded-lg text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="px-2 md:px-3 py-2 border border-zinc-700 rounded-lg text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
                 aria-label="Next page"
               >
                 Next
