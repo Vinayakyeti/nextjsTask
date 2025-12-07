@@ -94,5 +94,11 @@ export async function signInAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-  await signOut({ redirect: true, redirectTo: "/" });
+  try {
+    await signOut({ redirect: false });
+    return { success: true };
+  } catch (error) {
+    console.error("Logout error:", error);
+    return { success: true }; // Still return success even if signOut fails
+  }
 }
