@@ -16,7 +16,7 @@ type Question = {
 type Collection = {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   questions: Question[];
   createdAt: Date;
 };

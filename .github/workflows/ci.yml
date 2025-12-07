@@ -1,0 +1,253 @@
+name: CI/CD Pipeline
+
+# Trigger conditions
+on:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+  pull_request:
+    branches:
+      - master
+      - main
+      - develop
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  # Quality checks: linting, testing, building
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      # 2. Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'  # Cache node_modules
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci  # ci = clean install (better for CI)
+
+      # 4. Prisma Generate (generate TypeScript types from schema)
+      - name: Generate Prisma types
+        run: npm run db:generate
+
+      # 5. Run Linting
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true  # Don't block on lint warnings
+
+      # 6. Run Unit Tests
+      - name: Run Unit Tests
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+
+      # 7. Run Integration Tests
+      - name: Run Integration Tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+
+      # 8. Generate Coverage Report
+      - name: Generate Coverage Report
+        run: npm run test:coverage
+        continue-on-error: true  # Don't block if coverage fails
+
+      # 9. Upload Coverage to Codecov (optional)
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      # 10. Build Next.js application
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # Provide dummy values for required env vars during build
+          # (these don't need real values for build-time generation)
+          DATABASE_URL: "mongodb://localhost:27017/test"
+          NEXTAUTH_SECRET: "test-secret-for-build"
+          NEXTAUTH_URL: "http://localhost:3000"
+          AI_PROVIDER: "openai"
+          AI_API_KEY: "test-key"
+
+      # 11. Check Build Output
+      - name: Check Build Output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "Build failed: .next directory not created"
+            exit 1
+          fi
+          echo "✓ Build successful"
+
+  # Type checking (optional but recommended)
+  typecheck:
+    name: Type Checking
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma types
+        run: npm run db:generate
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  # E2E Tests (optional, runs on PR/push to main only)
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma types
+        run: npm run db:generate
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: "mongodb://localhost:27017/test"
+          NEXTAUTH_SECRET: "test-secret-for-e2e"
+          NEXTAUTH_URL: "http://localhost:3000"
+          AI_PROVIDER: "openai"
+          AI_API_KEY: "test-key"
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: "mongodb://localhost:27017/test"
+          NEXTAUTH_SECRET: "test-secret-for-e2e"
+          NEXTAUTH_URL: "http://localhost:3000"
+          AI_PROVIDER: "openai"
+          AI_API_KEY: "test-key"
+        continue-on-error: true
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Summary job that requires all other jobs to pass
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [quality, typecheck]
+    if: always()
+
+    steps:
+      - name: Check job statuses
+        run: |
+          if [ "${{ needs.quality.result }}" != "success" ]; then
+            echo "❌ Quality checks failed"
+            exit 1
+          fi
+          if [ "${{ needs.typecheck.result }}" != "success" ] && [ "${{ needs.typecheck.result }}" != "skipped" ]; then
+            echo "❌ Type checking failed"
+            exit 1
+          fi
+          echo "✅ All quality gates passed"
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const quality = "${{ needs.quality.result }}";
+            const typecheck = "${{ needs.typecheck.result }}";
+            
+            let comment = "## 🚀 CI/CD Results\n\n";
+            comment += `- Quality Checks: ${quality === 'success' ? '✅' : '❌'}\n`;
+            comment += `- Type Checking: ${typecheck === 'success' ? '✅' : typecheck === 'skipped' ? '⏭️' : '❌'}\n`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Notification job (optional)
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [quality, typecheck]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [ "${{ needs.quality.result }}" = "success" ] && [ "${{ needs.typecheck.result }}" = "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build succeeded notification
+        if: steps.status.outputs.status == 'success'
+        run: |
+          echo "${{ steps.status.outputs.emoji }} Build succeeded on master"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+
+      - name: Build failed notification
+        if: steps.status.outputs.status == 'failure'
+        run: |
+          echo "${{ steps.status.outputs.emoji }} Build failed on master"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          exit 1
