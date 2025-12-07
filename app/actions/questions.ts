@@ -40,7 +40,7 @@ export async function createQuestion(formData: FormData) {
     
     return { success: true, questionId: question.id };
   } catch (error) {
-    if (error instanceof ZodError) {
+    if (error instanceof ZodError && error.errors) {
       const details: Record<string, string[]> = {};
       error.errors.forEach(err => {
         const path = err.path.join('.');
@@ -55,7 +55,7 @@ export async function createQuestion(formData: FormData) {
       };
     }
 
-    logError('Failed to create question', error as Error, { userId: session?.user?.id });
+    logError('Failed to update question', error as Error, { userId: session?.user?.id });
     return {
       success: false,
       error: 'Failed to create question',
@@ -106,7 +106,7 @@ export async function updateQuestion(questionId: string, formData: FormData) {
     
     return { success: true, questionId: updated.id };
   } catch (error) {
-    if (error instanceof ZodError) {
+    if (error instanceof ZodError && error.errors) {
       const details: Record<string, string[]> = {};
       error.errors.forEach(err => {
         const path = err.path.join('.');
