@@ -14,7 +14,8 @@ export function LogoutButton() {
       await logoutAction();
       // Small delay to allow logout to process on the server
       setTimeout(() => {
-        router.push("/login");
+        // Use window.location to redirect to the current domain
+        window.location.href = "/login";
       }, 500);
     } catch (error) {
       console.error("Logout failed:", error);
