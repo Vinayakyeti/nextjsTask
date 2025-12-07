@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const sanitizeString = (value: string) => {
-  return value.trim().replace(/[\s]+/g, ' ');
+const sanitizeString = (value: string | undefined) => {
+  return value ? value.trim().replace(/[\s]+/g, ' ') : value;
 };
 
 export const createQuestionSchema = z.object({

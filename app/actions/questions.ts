@@ -10,8 +10,9 @@ import { createAuditLog, logError } from '@/lib/logger';
 import { ZodError } from 'zod';
 
 export async function createQuestion(formData: FormData) {
+  let session;
   try {
-    const session = await auth();
+    session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: 'Unauthorized', code: 'AUTH_ERROR' };
     }
@@ -64,8 +65,9 @@ export async function createQuestion(formData: FormData) {
 }
 
 export async function updateQuestion(questionId: string, formData: FormData) {
+  let session;
   try {
-    const session = await auth();
+    session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: 'Unauthorized', code: 'AUTH_ERROR' };
     }
@@ -130,8 +132,9 @@ export async function updateQuestion(questionId: string, formData: FormData) {
 }
 
 export async function deleteQuestion(questionId: string) {
+  let session;
   try {
-    const session = await auth();
+    session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: 'Unauthorized', code: 'AUTH_ERROR' };
     }
@@ -169,8 +172,9 @@ export async function deleteQuestion(questionId: string) {
 }
 
 export async function getUserQuestions(page = 1, limit = 20) {
+  let session;
   try {
-    const session = await auth();
+    session = await auth();
     const targetUserId = session?.user?.id;
 
     if (!targetUserId) {
@@ -229,8 +233,9 @@ export async function getUserQuestions(page = 1, limit = 20) {
 }
 
 export async function getQuestionById(questionId: string) {
+  let session;
   try {
-    const session = await auth();
+    session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: 'Unauthorized', code: 'AUTH_ERROR' };
     }
