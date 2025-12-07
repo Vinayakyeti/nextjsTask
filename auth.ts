@@ -5,9 +5,6 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { signInSchema } from "@/lib/validations"
 
-const baseUrl = process.env.NEXTAUTH_URL || 
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
@@ -61,9 +58,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
+      // If URL is relative, append to baseUrl
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // If URL is on the same origin, allow it
+      try {
+        const urlOrigin = new URL(url).origin;
+        if (urlOrigin === baseUrl) {
+          return url;
+        }
+      } catch {
+        // Invalid URL, fall back to baseUrl
+      }
+      // Otherwise redirect to baseUrl
+      return baseUrl;
     },
     async jwt({ token, user }) {
       if (user) {
