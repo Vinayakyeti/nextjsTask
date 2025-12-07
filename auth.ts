@@ -5,11 +5,15 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { signInSchema } from "@/lib/validations"
 
+const baseUrl = process.env.NEXTAUTH_URL || 
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
