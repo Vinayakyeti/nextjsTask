@@ -2,25 +2,34 @@
 
 import { logoutAction } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function LogoutButton() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     try {
+      setIsLoading(true);
       await logoutAction();
-      router.push("/");
+      // Small delay to allow logout to process on the server
+      setTimeout(() => {
+        router.push("/login");
+      }, 500);
     } catch (error) {
       console.error("Logout failed:", error);
+      setIsLoading(false);
     }
   };
 
   return (
     <button
       onClick={handleLogout}
-      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm"
+      disabled={isLoading}
+      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
     >
-      Logout
+      {isLoading ? "Logging out..." : "Logout"}
     </button>
   );
 }
+
