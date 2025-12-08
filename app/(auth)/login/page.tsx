@@ -27,8 +27,12 @@ export default function LoginPage() {
         setError(result.error);
         setLoading(false);
       } else if (result.success) {
-        // Successful login - redirect will happen via server action
-        // Keep loading state to prevent user interaction
+        // Successful login - manually redirect to dashboard
+        // The server-side signIn with redirectTo should handle it, but as fallback:
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 500);
       }
     } catch (err) {
       setError("An unexpected error occurred");

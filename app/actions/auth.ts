@@ -67,19 +67,22 @@ export async function signInAction(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    await signIn('credentials', {
+    // Don't use redirectTo - let the client handle redirect after successful auth
+    const result = await signIn('credentials', {
       email,
       password,
-      redirectTo: '/dashboard',
+      redirect: false,
     });
+
+    if (result?.error) {
+      return {
+        success: false,
+        error: 'Invalid email or password',
+      };
+    }
 
     return { success: true };
   } catch (error) {
-    // Redirect errors are expected and not actual errors
-    if (error && typeof error === 'object' && 'digest' in error) {
-      return { success: true };
-    }
-    
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
@@ -94,12 +97,7 @@ export async function signInAction(formData: FormData) {
           };
       }
     }
-    
-    // For any other error, return a success since the redirect likely happened
-    if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
-      return { success: true };
-    }
-    
+
     return {
       success: false,
       error: 'Login failed',
