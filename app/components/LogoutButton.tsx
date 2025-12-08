@@ -12,9 +12,7 @@ export function LogoutButton() {
     try {
       setIsLoading(true);
       await logoutAction();
-      // Small delay to allow logout to process on the server
       setTimeout(() => {
-        // Use window.location to redirect to the current domain
         window.location.href = "/login";
       }, 500);
     } catch (error) {

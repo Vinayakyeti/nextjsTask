@@ -210,18 +210,14 @@ export async function getUserQuestions(page = 1, limit = 20) {
     const validated = paginationSchema.parse({ page, limit });
     const skip = (validated.page - 1) * validated.limit;
 
-    // MongoDB ObjectId vs string mismatch - query without WHERE and filter in JS
-    // This is a workaround for Prisma's MongoDB string/ObjectId handling
     const allUserQuestions = await prisma.question.findMany({
       orderBy: { createdAt: 'desc' },
     });
 
-    // Filter for this user and active records
     const userQuestions = allUserQuestions.filter(q => 
       String(q.userId) === String(targetUserId) && q.deletedAt === null
     );
 
-    // Apply pagination
     const paginatedQuestions = userQuestions.slice(skip, skip + validated.limit);
     const total = userQuestions.length;
 

@@ -67,7 +67,6 @@ export async function signInAction(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    // Don't use redirectTo - let the client handle redirect after successful auth
     const result = await signIn('credentials', {
       email,
       password,
@@ -111,6 +110,6 @@ export async function logoutAction() {
     return { success: true };
   } catch (error) {
     console.error("Logout error:", error);
-    return { success: true }; // Still return success even if signOut fails
+    return { success: true };
   }
 }

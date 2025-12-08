@@ -85,18 +85,15 @@ export async function getPracticeStats() {
     }
 
     const [totalSessions, avgDuration, sessionsByDifficulty] = await Promise.all([
-      // Total sessions
       prisma.practiceSession.count({
         where: { userId: session.user.id },
       }),
       
-      // Average duration
       prisma.practiceSession.aggregate({
         where: { userId: session.user.id },
         _avg: { duration: true },
       }),
       
-      // Sessions by difficulty
       prisma.practiceSession.groupBy({
         by: ['questionId'],
         where: { userId: session.user.id },
@@ -104,7 +101,6 @@ export async function getPracticeStats() {
       }),
     ]);
 
-    // Get difficulty breakdown
     const questionIds = sessionsByDifficulty.map(s => s.questionId);
     const questions = await prisma.question.findMany({
       where: { id: { in: questionIds } },

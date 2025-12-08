@@ -132,7 +132,6 @@ export async function addQuestionToCollection(collectionId: string, questionId: 
       return { success: false, error: 'Collection not found or unauthorized' };
     }
 
-    // Check if question exists and user has access (owns the question)
     const question = await prisma.question.findUnique({
       where: { id: questionId },
     });
@@ -146,8 +145,6 @@ export async function addQuestionToCollection(collectionId: string, questionId: 
     const alreadyExists = collection.questionIds?.some(id => String(id) === questionIdStr);
     
     if (!alreadyExists) {
-      // For MongoDB with Prisma, we need to handle array updates carefully
-      // Ensure we're working with an array
       const currentIds = Array.isArray(collection.questionIds) ? collection.questionIds : [];
       
       const updatedIds = [...currentIds, questionId];
@@ -213,7 +210,6 @@ export async function getUserCollections(userId?: string) {
       return { success: false, error: 'Unauthorized' };
     }
 
-    // Fetch all collections without WHERE clause to avoid Prisma's type conversion issue
     const allCollections = await prisma.collection.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
@@ -228,7 +224,6 @@ export async function getUserCollections(userId?: string) {
       },
     });
 
-    // Filter in JavaScript to match exact userId string comparison
     const collections = allCollections.filter(c => 
       String(c.userId) === String(targetUserId) && c.deletedAt === null
     );
@@ -258,7 +253,6 @@ export async function getCollectionById(collectionId: string) {
       return { success: false, error: 'Collection not found or unauthorized' };
     }
 
-    // If array is empty, skip the query
     if (!collection.questionIds || collection.questionIds.length === 0) {
       return {
         success: true,
@@ -274,8 +268,6 @@ export async function getCollectionById(collectionId: string) {
         id: {
           in: collection.questionIds as string[]
         },
-        // Don't filter by deletedAt - collection should include questions even if they're deleted
-        // This allows viewing historical collections
       },
       select: {
         id: true,
