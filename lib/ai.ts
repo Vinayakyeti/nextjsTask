@@ -88,7 +88,7 @@ async function callGemini(
   apiKey: string
 ): Promise<AIFeedback> {
   const response = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
     {
       method: 'POST',
       headers: {
@@ -100,16 +100,16 @@ async function callGemini(
           {
             parts: [
               {
-                text: `You are an expert technical interview coach. Analyze this interview answer and provide structured feedback in JSON format.
+                text: `You are an expert technical interview coach. Analyze this interview answer and provide structured feedback.
 
 Question: "${question}"
 User's Answer: "${userAnswer}"
 
-Return ONLY valid JSON with:
+Respond with ONLY valid JSON (no markdown, no code blocks):
 {
   "summary": "1-2 sentence overall assessment",
-  "strengths": ["strength 1", "strength 2"],
-  "improvements": ["improvement 1", "improvement 2"],
+  "strengths": ["strength 1", "strength 2", "strength 3"],
+  "improvements": ["improvement 1", "improvement 2", "improvement 3"],
   "overallScore": 7
 }`,
               },
@@ -118,32 +118,61 @@ Return ONLY valid JSON with:
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1024,
         },
       }),
     }
   );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    const errorMsg = error.error?.message || `HTTP ${response.status}`;
+    const errorData = await response.json().catch(() => ({}));
+    console.error('Gemini API error response:', errorData);
+    const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
     throw new Error(`Gemini API error: ${errorMsg}`);
   }
 
   const data = await response.json();
+  
+  if (!data.candidates || data.candidates.length === 0) {
+    console.error('No candidates in Gemini response:', data);
+    throw new Error('No response from Gemini API');
+  }
 
-  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const content = data.candidates[0]?.content?.parts?.[0]?.text;
 
   if (!content) {
+    console.error('No text content in Gemini response:', data);
     throw new Error('No response content from Gemini API');
   }
 
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  // Clean up the response - remove markdown code blocks if present
+  let cleanContent = content.trim();
+  if (cleanContent.startsWith('```json')) {
+    cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (cleanContent.startsWith('```')) {
+    cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+
+  // Extract JSON from the response
+  const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
+    console.error('Could not find JSON in Gemini response:', cleanContent);
     throw new Error('Failed to parse JSON from Gemini response');
   }
 
-  return JSON.parse(jsonMatch[0]) as AIFeedback;
+  try {
+    const feedback = JSON.parse(jsonMatch[0]) as AIFeedback;
+    
+    // Validate the response structure
+    if (!feedback.summary || !Array.isArray(feedback.strengths) || !Array.isArray(feedback.improvements) || typeof feedback.overallScore !== 'number') {
+      throw new Error('Invalid feedback structure');
+    }
+    
+    return feedback;
+  } catch (parseError) {
+    console.error('JSON parse error:', parseError, 'JSON string:', jsonMatch[0]);
+    throw new Error('Failed to parse AI response');
+  }
 }
 
 async function callGroq(

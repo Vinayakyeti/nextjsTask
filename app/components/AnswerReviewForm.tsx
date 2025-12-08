@@ -41,10 +41,12 @@ export function AnswerReviewForm() {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="question" className="block text-sm font-medium text-white mb-2">
               Interview Question
             </label>
             <textarea
+              id="question"
+              name="question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Enter the interview question..."
@@ -55,10 +57,12 @@ export function AnswerReviewForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label htmlFor="answer" className="block text-sm font-medium text-white mb-2">
               Your Answer
             </label>
             <textarea
+              id="answer"
+              name="answer"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Enter your answer to the question..."
