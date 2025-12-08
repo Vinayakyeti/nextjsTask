@@ -32,9 +32,6 @@ export default async function DashboardLayout({
               <Link href="/collections" className="text-zinc-300 hover:text-white transition text-sm">
                 Collections
               </Link>
-              <Link href="/ai-review" className="text-zinc-300 hover:text-white font-medium transition text-sm">
-                ✨ AI Review
-              </Link>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               <span className="text-xs md:text-sm text-zinc-300 hidden sm:inline truncate max-w-[150px]">{session.user?.email}</span>
@@ -51,9 +48,6 @@ export default async function DashboardLayout({
             </Link>
             <Link href="/collections" className="text-zinc-300 hover:text-white transition text-sm whitespace-nowrap px-2 py-1">
               Collections
-            </Link>
-            <Link href="/ai-review" className="text-zinc-300 hover:text-white font-medium transition text-sm whitespace-nowrap px-2 py-1">
-              ✨ AI Review
             </Link>
           </div>
         </div>

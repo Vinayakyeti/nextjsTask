@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Interview Prep Hub",
-  description: "Prepare for technical interviews with organized questions, practice tracking, and AI-powered feedback",
+  description: "Prepare for technical interviews with organized questions and practice tracking",
 };
 
 export default function RootLayout({

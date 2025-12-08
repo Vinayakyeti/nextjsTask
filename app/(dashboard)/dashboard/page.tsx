@@ -64,7 +64,6 @@ export default async function DashboardPage() {
           <ul className="space-y-2 text-sm text-zinc-400">
             <li>✓ Create your first question to track interview problems</li>
             <li>✓ Organize questions into collections by topic or company</li>
-            <li>✓ Practice with AI feedback (coming soon)</li>
             <li>✓ Track your progress over time</li>
           </ul>
         </div>

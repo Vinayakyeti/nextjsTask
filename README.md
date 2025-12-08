@@ -1,12 +1,11 @@
 # Interview Prep Hub
 
-A full-stack technical interview preparation platform with question management, AI-powered feedback, and practice tracking.
+A full-stack technical interview preparation platform with question management and practice tracking.
 
 ## 🎯 Features
 
 - **Question Management**: Create, edit, and organize technical interview questions
 - **Collections**: Group questions into custom collections for organized studying
-- **AI Feedback**: Get AI-powered feedback on interview answers using Gemini API
 - **Practice Sessions**: Track your practice history and performance
 - **Authentication**: Secure user authentication with NextAuth.js
 - **Responsive Design**: Modern UI built with Tailwind CSS
@@ -18,7 +17,6 @@ A full-stack technical interview preparation platform with question management, 
 - **Database**: MongoDB with Prisma ORM
 - **Authentication**: NextAuth.js v5
 - **Validation**: Zod
-- **AI Integration**: Google Gemini API
 
 ## 📁 Project Structure
 
@@ -36,7 +34,6 @@ app/
 lib/
 ├── prisma.ts               # Prisma client
 ├── validations.ts          # Zod schemas
-├── ai.ts                   # AI integration
 └── logger.ts               # Logging utilities
 
 prisma/
