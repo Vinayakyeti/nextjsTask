@@ -25,13 +25,13 @@ export default function LoginPage() {
 
       if (result.error) {
         setError(result.error);
-      } else {
-        router.push("/dashboard");
-        router.refresh();
+        setLoading(false);
+      } else if (result.success) {
+        // Successful login - redirect will happen via server action
+        // Keep loading state to prevent user interaction
       }
     } catch (err) {
       setError("An unexpected error occurred");
-    } finally {
       setLoading(false);
     }
   };
